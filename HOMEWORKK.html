@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Card Game</title>
+    <style>
+        body {
+            min-height: 100vh;
+            min-width: 100vw;
+            background-color: #12181f;
+            color: white;
+            text-align: center;
+        }
+
+        h1 {
+            font-weight: 700;
+            font-size: 50px;
+        }
+
+        p {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .actions button {
+            padding: 8px 16px;
+            font-size: 30px;
+            border-radius: 10px;
+            background-color: #27ae60;
+            color: white;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+        .card {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 10px;
+    background-image: url("https://cdn-icons-png.flaticon.com/256/11446/11446098.png");   
+    background-size: cover;
+}
+     
+        .card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .card.flipped {
+            background: #2ecc71;
+        }
+
+        .card.matched {
+            opacity: 0.5;
+        }
+
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            
+        }
+
+        .start-game {
+            display: none;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+
+<body>
+    <h1>Memory Cards</h1>
+
+    <div class="cards">
+        
+    </div>
+    <div class="actions">
+        <button id="start-button" onclick="startGame()">Start</button>
+        <button id="finish-game" onclick="finishGame()">Finish</button>
+        <button id="restart-button" onclick="restartGame()">Restart</button>
+    </div>
+   
+
+   
+  <script>
+    var flippedCards = [];
+    var score = 0;
+    var canFlip = false;
+    var gameImages = ["https://i.pinimg.com/236x/6f/69/ec/6f69ecb15e704e3fe278a0727ff21c35.jpg", 
+                "https://i.pinimg.com/236x/6f/69/ec/6f69ecb15e704e3fe278a0727ff21c35.jpg",
+                 "https://i.pinimg.com/custom_covers/200x150/454722962315779020_1590397094.jpg",
+                 "https://i.pinimg.com/custom_covers/200x150/454722962315779020_1590397094.jpg",
+                 "https://i.pinimg.com/564x/49/0f/96/490f96d4331ff1b66383206431bd9168.jpg",
+                 "https://i.pinimg.com/564x/49/0f/96/490f96d4331ff1b66383206431bd9168.jpg",
+                 "https://i.pinimg.com/564x/71/2a/a7/712aa7226ee2a2a69c15d89c2930de52.jpg",
+                 "https://i.pinimg.com/564x/71/2a/a7/712aa7226ee2a2a69c15d89c2930de52.jpg",
+                 "https://i.pinimg.com/564x/dc/47/7c/dc477c569d37072f802f1c35b05df378.jpg",
+                 "https://i.pinimg.com/564x/dc/47/7c/dc477c569d37072f802f1c35b05df378.jpg"];
+
+
+    $(document).ready(function () {
+       
+        var gameContainer = $(".cards");
+        addCardsToContainer(gameContainer, gameImages);
+
+      
+        $("#finish-game").hide();
+    });
+
+    function startGame() {
+        $(".start-game").hide();
+        $(".cards").show();
+        $("#start-button").hide();
+        $("#finish-game").show();
+
+        
+        $(".card").removeClass("flipped matched").find("img").hide();
+
+      
+        setTimeout(function () {
+            $(".card").click(function () {
+                flipCard($(this));
+            });
+            canFlip = true;
+        }, 2000);
+    }
+
+    function flipCard(card) {
+        if (!canFlip || card.hasClass("flipped") || flippedCards.length >= 2) {
+            return;
+        }
+
+        card.addClass("flipped");
+        card.find("img").fadeIn(500); 
+        flippedCards.push(card);
+
+        if (flippedCards.length === 2) {
+            setTimeout(checkMatch, 500);
+        }
+    }
+
+    function checkMatch() {
+        var card1 = flippedCards[0];
+        var card2 = flippedCards[1];
+
+        if (card1.find("img").attr("src") === card2.find("img").attr("src")) {
+            card1.addClass("matched");
+            card2.addClass("matched");
+            score++;
+
+            if (score == 5) {
+                endGame();
+            }
+        } else {
+            card1.find("img").fadeTo(500, 0.5); 
+            card2.find("img").fadeTo(500, 0.5); 
+
+            setTimeout(function () {
+                card1.removeClass("flipped");
+                card2.removeClass("flipped");
+                card1.find("img").fadeOut(500);
+                card2.find("img").fadeOut(500);
+            }, 1000);
+        }
+
+        flippedCards = [];
+    }
+
+
+    function endGame() {
+       alert("Congratulations!  Your score: " + score);
+        $("#finish-game").hide();
+        $("#start-button").show().text("Start");
+    }
+
+    function finishGame() {
+        $(".card").addClass("flipped");
+        canFlip = false;
+        endGame();
+    }
+
+    function restartGame() {
+        resetGame();
+        startGame();
+    }
+
+    function resetGame() {
+        flippedCards = [];
+        score = 0;
+        canFlip = false;
+
+        $(".card").removeClass("flipped matched");
+        $(".cards").hide();
+        $(".start-game").show();
+        $("#finish-game").hide();
+        $("#start-button").show().text("Start");
+    }
+
+    function addCardsToContainer(container, images) {
+    images.forEach(function(image) {
+        var card = $('<div>', { class: 'card' });
+        
+        var img = $('<img>', { src: image });
+        card.append(img);
+        
+        container.append(card);
+    });
+}
+
+
+</script>
+</body>
+
+</html>
